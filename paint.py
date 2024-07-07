@@ -3,25 +3,10 @@ import time
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-
-class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super().__init__()
-
-        #self.setFixedSize(self.width, self.height)
-        #self.setLayout(self.layout)
+from board import Board
+from solver import Solver
 
 
-        # Set window background color
-        self.setAutoFillBackground(True)
-        
-      
-        # Add paint widget and paint
-        self.m = PaintWidget(self)
-        #self.m.resize(self.width,self.height)
-        self.setCentralWidget(self.m)
-
-        self.show()
   
 class PaintWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -43,9 +28,28 @@ class PaintWidget(QtWidgets.QWidget):
                 qp.drawEllipse(i*4*10+10, j*4*10+10, 20, 20)
       
       
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        #self.setFixedSize(self.width, self.height)
+        #self.setLayout(self.layout)
+
+
+        # Set window background color
+        self.setAutoFillBackground(True)
+        
+      
+        # Add paint widget and paint
+        self.m = PaintWidget(self)
+        #self.m.resize(self.width,self.height)
+        self.setCentralWidget(self.m)
+
+
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     app = QtWidgets.QApplication(sys.argv)
-    ex = MainWindow()
+    window = MainWindow()
+    window.show()
     sys.exit(app.exec_())

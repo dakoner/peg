@@ -28,12 +28,23 @@ class TableModel(QtCore.QAbstractTableModel):
     def columnCount(self, index):
         return len(self._data[0])
 
+class TableView(QtWidgets.QTableView):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+        self.setShowGrid(False)
+        self.resizeColumnsToContents()
+        self.resizeRowsToContents()
+        self.horizontalHeader().hide()
+        self.verticalHeader().hide()
+        self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.table = QtWidgets.QTableView()
+        self.table = TableView()
 
         data = [
           [4, 9, 2],
@@ -45,19 +56,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.model = TableModel(data)
         self.table.setModel(self.model)
-        self.table.setShowGrid(False)
-        self.table.resizeColumnsToContents()
-        self.table.resizeRowsToContents()
-        self.table.horizontalHeader().hide()
-        self.table.verticalHeader().hide()
-        self.table.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
-        self.table.setFocusPolicy(QtCore.Qt.NoFocus)
-
         self.setCentralWidget(self.table)
 
-signal.signal(signal.SIGINT, signal.SIG_DFL)
+      
+if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-app=QtWidgets.QApplication(sys.argv)
-window=MainWindow()
-window.show()
-app.exec_()
+    app=QtWidgets.QApplication(sys.argv)
+    window=MainWindow()
+    window.show()
+    sys.exit(app.exec_())
