@@ -104,7 +104,15 @@ class Board(object):
 
         return self
 
+    def __repr__(self):
+        s = []
+        for j in range(len(self.board[0])-1):
+            for i in range(len(self.board)-1):
+                s += str(self.board[i][j])
+            s += '\n'
 
+        return ''.join(s)
+    
 # Set of hashes of board positions. Used to skip boards that have been played already.
 boards_played = set()
 
@@ -113,6 +121,8 @@ statistics = {'Games finished': 0, 'Boards skipped': 0}
 
 
 def solve_recursive(board, move_memo=()):
+    print("Board=")
+    print(board)
     if hash(board) in boards_played:
         statistics['Boards skipped'] += 1
         return
@@ -122,6 +132,7 @@ def solve_recursive(board, move_memo=()):
 
     # If there are no moves left
     if len(moves) == 0:
+        print("Finished with", board.score())
         statistics['Games finished'] += 1
 
         # If the game is solved
@@ -129,6 +140,7 @@ def solve_recursive(board, move_memo=()):
             return move_memo
     else:
         for move in moves:
+            print("Consider move", move)
             result = solve_recursive(board.clone().move(move), [mm for mm in move_memo] + [move])
             if result:
                 return result
