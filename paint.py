@@ -16,17 +16,9 @@ class PaintWidget(QtWidgets.QWidget):
         self.setFixedSize(290, 290)
         layout=QtWidgets.QVBoxLayout()
         self.setLayout(layout)
-        self.setAutoFillBackground(True)
-      
-        self.black_pal = QtGui.QPalette()
-        self.black_pal.setColor(QtGui.QPalette.Window, QtCore.Qt.black)
-
-        self.red_pal = QtGui.QPalette()
-        self.red_pal.setColor(QtGui.QPalette.Window, QtCore.Qt.red)
 
     def paintEvent(self, event):
         qp = QtGui.QPainter(self)
-
         if self.board:
             for i in range(7):
                 for j in range(7):
@@ -35,8 +27,12 @@ class PaintWidget(QtWidgets.QWidget):
                         qp.setBrush(QtCore.Qt.red)
                         qp.drawEllipse(i*4*10+10, j*4*10+10, 20, 20)
         else:
-                  
-            self.setPalette(pal)
+            qp.setPen(QtCore.Qt.black)
+            qp.setBrush(QtCore.Qt.black)
+            qp.drawRect(0, 0, self.width(), self.height())
+
+
+        
                 
     
         
@@ -55,35 +51,54 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.solver = Solver(self.move_callback, self.done_callback)
         self.all_boards = []
+        self.all_moves = []
         self.moves_played = self.solver.solve_recursive(Board())
         self.moves_played_reverse = list(reversed(self.moves_played))
+        self.all_boards_reverse = list(reversed(self.all_boards))
+        self.all_moves_reverse = list(reversed(self.all_moves))
         print(f"Finished {self.solver.statistics['Games finished']} games! (skipped {self.solver.statistics['Boards skipped']})")
         self.all_boards.reverse()
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.start)
-        self.timer.start(1)
-        #self.timer.singleShot(100, self.start)
+        #self.timer.start(1)
+        self.timer.singleShot(100, self.start)
 
     def move_callback(self, board, moves):
         self.all_boards.append(board)
 
     def done_callback(self, board, moves):
-        print("done")
         self.all_boards.append(None)
+        self.all_moves.append(moves)
 
     def start(self):
-        # for board in self.all_boards:
-        #     self.m.board = board
-        #     print(board)
-        #     self.m.repaint()
-        #     self.m.update()
-        try:
-            board = self.all_boards.pop()
-        except IndexError:
-            return
+        # try:
+        #     moves = self.all_moves_reverse.pop()
+        # except:
+        #     return
+        # else:
+        #     b = Board()
+        #     for move in moves:
+        #         b.move(move)
+        #         self.m.board = b
+        #         self.m.repaint()
+        #         self.m.update()
+        #     print(b.score())
+        board = self.all_boards_reverse.pop()
+        self.m.board = board
+        self.m.repaint()
+        if board:
+            self.timer.singleShot(100, self.start)
         else:
-            self.m.board = board
-            self.m.repaint()
+            self.timer.singleShot(10, self.start)
+
+
+        # try:
+        #     board = self.all_boards.pop()
+        # except IndexError:
+        #     return
+        # else:
+        #     self.m.board = board
+        #     self.m.repaint()
 
         # try:
         #     move = self.moves_played_reverse.pop()
