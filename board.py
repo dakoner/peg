@@ -90,7 +90,12 @@ class Board(object):
         s = []
         for j in range(len(self.board[0])-1):
             for i in range(len(self.board)-1):
-                s += str(self.board[i][j])
+                x = self.board[i][j]
+                if x == 1:
+                    s += "+"
+                else:
+                    s += ' '
+                #s += str(self.board[i][j])
             s += '\n'
 
         return ''.join(s)
