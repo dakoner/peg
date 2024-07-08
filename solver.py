@@ -28,33 +28,29 @@ class Solver:
         self.done_callback = done_callback
 
     def solve_recursive(self, board, move_memo=()):
-
+        if self.move_callback:
+            self.move_callback(board, move_memo)
 
         if hash(board) in self.boards_played:
             self.statistics['Boards skipped'] += 1
             return
         self.boards_played.add(hash(board))
-        if self.move_callback:
-            self.move_callback(board, move_memo)
+        
         moves = board.possible_moves()
 
         # If there are no moves left
         if len(moves) == 0:
-            #print("Finished with", board.score())
             self.statistics['Games finished'] += 1
-
+            if self.done_callback:
+                self.done_callback(board, move_memo)
             # If the game is solved
             if board.score() == 0:
-                if self.done_callback:
-                    self.done_callback(board, move_memo)
                 return move_memo
         else:
             for move in moves:
-                #print("Consider move", move)
                 result = self.solve_recursive(board.clone().move(move), [mm for mm in move_memo] + [move])
                 if result:
                     return result
-
 
 if __name__ == '__main__':
     s = Solver()
