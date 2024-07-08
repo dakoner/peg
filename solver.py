@@ -16,28 +16,26 @@
 """A brute force solver for the English (33 hole) variant of the peg solitaire board game."""
 
 from board import Board
-
+import time
 class Solver:
-    def __init__(self, callback=None):
-
+    def __init__(self, move_callback=None, done_callback=None):
         # Set of hashes of board positions. Used to skip boards that have been played already.
         self.boards_played = set()
 
         # Counters for statistical purposes.
         self.statistics = {'Games finished': 0, 'Boards skipped': 0}
-        self.callback = callback
+        self.move_callback = move_callback
+        self.done_callback = done_callback
 
     def solve_recursive(self, board, move_memo=()):
-        #print("Board=")
-        #print(board)
-        if self.callback:
-            self.callback(board, move_memo)
+
 
         if hash(board) in self.boards_played:
             self.statistics['Boards skipped'] += 1
             return
         self.boards_played.add(hash(board))
-
+        if self.move_callback:
+            self.move_callback(board, move_memo)
         moves = board.possible_moves()
 
         # If there are no moves left
@@ -47,6 +45,8 @@ class Solver:
 
             # If the game is solved
             if board.score() == 0:
+                if self.done_callback:
+                    self.done_callback(board, move_memo)
                 return move_memo
         else:
             for move in moves:
