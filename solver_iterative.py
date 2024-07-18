@@ -35,25 +35,27 @@ class Solver:
                 return reversed(solution)
             
     def solve_iterative(self):
-        while len(self.stack):
-            move, self.board = self.stack.pop()
-            if self.board not in self.boards_visited:
-                self.boards_visited.add(self.board)
+        move, self.board = self.stack.pop()
+        if self.board not in self.boards_visited:
+            self.boards_visited.add(self.board)
 
-                moves = self.board.possible_moves()
-                if len(moves) == 0:
-                    score = self.board.score()
-                    if score == 0:
-                        return self.build_solution()
-                        
-                for move in moves:
-                    b = self.board.clone().move(move)
-                    self.parent[b] = (move, self.board)
-                    self.stack.append((move, b))
-
+            moves = self.board.possible_moves()
+            if len(moves) == 0:
+                score = self.board.score()
+                if score == 0:
+                    return self.build_solution()
+                    
+            for move in moves:
+                b = self.board.clone().move(move)
+                self.parent[b] = (move, self.board)
+                self.stack.append((move, b))
+        
 
 if __name__ == '__main__':
     s = Solver()
-    moves_played = s.solve_iterative()
-    print(list(moves_played))
-    
+    while len(s.stack):
+        result = s.solve_iterative()
+        if result:
+            break
+
+    print(list(result))
