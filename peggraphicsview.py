@@ -7,7 +7,7 @@ from PyQt5.uic import loadUi
 
 from typing import List, Tuple
 from board import Board
-
+from solver_iterative import Solver
 
 class PegGraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, *args, **kwargs):
@@ -28,15 +28,18 @@ class PegGraphicsView(QtWidgets.QGraphicsView):
         self.lock.acquire()
 
         self.timer = QtCore.QTimer()
-        self.timer.start(100)
+        self.timer.start(0)
         self.timer.timeout.connect(self.showTime)
-
-        self.solver = Solver(self)
-        self.solver.start()
+        self.solver = Solver()
 
     def showTime(self):
-        if self.lock.locked():
-            self.lock.release()
+        if self.solver.stack:
+            solution = self.solver.solve_iterative()
+            self.update_board(self.solver.board.board)
+            if solution:
+                print("Solution found")
+                print(list(solution))
+                self.timer.timeout.disconnect(self.showTime)
 
 
     def draw_lines(self):
@@ -72,74 +75,25 @@ class PegGraphicsView(QtWidgets.QGraphicsView):
 
     def update_board(self, board):
         self.board = board
-        #print(self.board)
-        print(self.board_items.keys())
         for i in range(self.nx):
             for j in range(self.ny):
-                
                 if self.board[i][j] == 1:
                     self.board_items[i,j].show()
                 elif self.board[i][j] == 0:
                     self.board_items[i,j].hide()
 
-
-class Solver(threading.Thread):
-    def __init__(self, graphics_view, group=None, target=None, name=None,
-                 args=(), kwargs=None):
-        super().__init__(group=group, target=target, 
-			             name=name)
-
-        self.graphics_view = graphics_view
-
-        # Set of hashes of board positions. Used to skip boards that have been played already.
-        self.boards_played = set()
-
-        # Counters for statistical purposes.
-        self.statistics = {'Games finished': 0, 'Boards skipped': 0}
-
-    def run(self):
-        #while True:
-        self.board = Board()
-        moves_played = self.solve_recursive(self.board)
-        print(f"Finished {self.statistics['Games finished']} games! (skipped {self.statistics['Boards skipped']})")
-        if moves_played:
-            m = '\n'.join([f"{m[0][0]}, {m[0][1]} -> {m[1][0]}, {m[1][1]}" for m in moves_played])
-            print(f"Solution found, moves:\n{m}")
-
-    def solve_recursive(self, board, move_memo=()):
-        self.graphics_view.lock.acquire()
-        self.graphics_view.update_board(board.board)
-        if hash(board) in self.boards_played:
-            self.statistics['Boards skipped'] += 1
-            return
-        self.boards_played.add(hash(board))
-
-        moves = board.possible_moves()
-
-        # If there are no moves left
-        if len(moves) == 0:
-            print("Game finished, score:", board.score())
-            self.statistics['Games finished'] += 1
-
-            # If the game is solved
-            if board.score() == 0:
-                return move_memo
-        else:
-            for move in moves:
-                print("Try move", move)
-                result = self.solve_recursive(board.clone().move(move), [mm for mm in move_memo] + [move])
-                if result:
-                    print("Got result", result)
-                    return result
-
-
+    def next(self, _):
+            if len(self.solver.stack):
+                self.solver.solve_iterative()
+                self.update_board(self.solver.board.board)
+            else:
+                print("Stack empty")
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         loadUi("peg.ui", self)
-        
+        self.toolBar.actionTriggered.connect(self.graphicsView.next)
         
 class QApplication(QtWidgets.QApplication):
     def __init__(self, *argv):

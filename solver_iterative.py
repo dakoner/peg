@@ -25,14 +25,6 @@ class Solver:
         self.stack = [(None, self.board)]
         self.parent = {}
 
-    def build_solution(self):
-        solution = []
-        while True:
-            try:
-                move, self.board = self.parent[self.board]
-                solution.append(move)
-            except KeyError:
-                return reversed(solution)
             
     def solve_iterative(self):
         move, self.board = self.stack.pop()
@@ -43,11 +35,19 @@ class Solver:
             if len(moves) == 0:
                 score = self.board.score()
                 if score == 0:
-                    return self.build_solution()
+                    solution = []
+                    #print(self.parent)
+                    board = self.board
+                    while True:
+                        try:
+                            move, board = self.parent[board]
+                            solution.append(move)
+                        except KeyError:
+                            return reversed(solution)
                     
             for move in moves:
                 b = self.board.clone().move(move)
-                self.parent[b] = (move, self.board)
+                self.parent[b] = move, self.board
                 self.stack.append((move, b))
         
 
