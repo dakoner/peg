@@ -22,30 +22,29 @@ class Solver:
         # Set of hashes of board positions. Used to skip boards that have been played already.
         self.boards_visited = set()
 
-
+    def build_solution(self, board, parent):
+        solution = []
+        while True:
+            try:
+                move, board = parent[board]
+                solution.append(move)
+            except KeyError:
+                return reversed(solution)
+            
     def solve_iterative(self, board):
-
         stack = [(None, board)]
         parent = {}
         while len(stack):
             move, board = stack.pop()
-            #print(board)
             if board not in self.boards_visited:
                 self.boards_visited.add(board)
-                
+
                 moves = board.possible_moves()
                 if len(moves) == 0:
                     score = board.score()
                     if score == 0:
-                        print("Game solved")
-                        solution = []
-                        while True:
-                            try:
-                                move, board = parent[board]
-                                solution.append(move)
-                            except KeyError:
-                                return reversed(solution)
-
+                        return self.build_solution(board, parent)
+                        
                 for move in moves:
                     b = board.clone().move(move)
                     parent[b] = (move, board)
