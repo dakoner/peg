@@ -21,38 +21,39 @@ class Solver:
     def __init__(self):
         # Set of hashes of board positions. Used to skip boards that have been played already.
         self.boards_visited = set()
+        self.board = Board()
+        self.stack = [(None, self.board)]
+        self.parent = {}
 
-    def build_solution(self, board, parent):
+    def build_solution(self):
         solution = []
         while True:
             try:
-                move, board = parent[board]
+                move, self.board = self.parent[self.board]
                 solution.append(move)
             except KeyError:
                 return reversed(solution)
             
-    def solve_iterative(self, board):
-        stack = [(None, board)]
-        parent = {}
-        while len(stack):
-            move, board = stack.pop()
-            if board not in self.boards_visited:
-                self.boards_visited.add(board)
+    def solve_iterative(self):
+        while len(self.stack):
+            move, self.board = self.stack.pop()
+            if self.board not in self.boards_visited:
+                self.boards_visited.add(self.board)
 
-                moves = board.possible_moves()
+                moves = self.board.possible_moves()
                 if len(moves) == 0:
-                    score = board.score()
+                    score = self.board.score()
                     if score == 0:
-                        return self.build_solution(board, parent)
+                        return self.build_solution()
                         
                 for move in moves:
-                    b = board.clone().move(move)
-                    parent[b] = (move, board)
-                    stack.append((move, b))
+                    b = self.board.clone().move(move)
+                    self.parent[b] = (move, self.board)
+                    self.stack.append((move, b))
 
 
 if __name__ == '__main__':
     s = Solver()
-    moves_played = s.solve_iterative(Board())
+    moves_played = s.solve_iterative()
     print(list(moves_played))
     
