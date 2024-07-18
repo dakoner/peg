@@ -87,9 +87,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.m.board = board
         self.m.repaint()
         if board:
-            self.timer.singleShot(100, self.start)
-        else:
             self.timer.singleShot(10, self.start)
+        else:
+            self.timer.singleShot(100, self.start)
 
 
         # try:
