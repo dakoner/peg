@@ -88,8 +88,8 @@ class Board(object):
 
     def __repr__(self):
         s = []
-        for j in range(len(self.board[0])-1):
-            for i in range(len(self.board)-1):
+        for j in range(len(self.board[0])):
+            for i in range(len(self.board)):
                 x = self.board[i][j]
                 if x == 1:
                     s += "+"
