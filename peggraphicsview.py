@@ -12,35 +12,25 @@ from solver_iterative import Solver
 class PegGraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.board = Board()
-        self.nx = len(self.board.board[0])
-        self.ny = len(self.board.board)
+        self.board_items = {}
         self.setScene(QtWidgets.QGraphicsScene())
+        self.solver = Solver()
+        self.update_board()
         self.draw_lines()
-        self.draw_pips()
         self.scene().setSceneRect(QtCore.QRectF())
         self.scale(5,5)
-        #self.fitInView(self.scene().sceneRect())
         
-    
-        self.lock = threading.Lock()
-        
-        self.lock.acquire()
-
         self.timer = QtCore.QTimer()
-        #self.timer.start(5)
-        self.timer.timeout.connect(self.showTime)
-        self.solver = Solver()
+        self.timer.timeout.connect(self.showTime)        
 
     def showTime(self):
         if self.solver.stack:
             solution = self.solver.solve_iterative()
-            self.update_board(self.solver.board.board)
+            self.update_board()
             if solution:
                 print("Solution found")
                 print(list(solution))
-                self.timer.timeout.disconnect(self.showTime)
-
+                self.timer.stop()
 
     def draw_lines(self):
         color = QtGui.QColor("black")
@@ -56,43 +46,44 @@ class PegGraphicsView(QtWidgets.QGraphicsView):
             item.setPen(pen)
             self.scene().addItem(item)
 
-    def draw_pips(self):
+
+    def update_board(self):
         color = QtGui.QColor("red")
         pen = QtGui.QPen(color, 1)
         brush = QtGui.QBrush(color)
-        self.board_items = {}
+        self.nx = len(self.solver.board.board[0])
+        self.ny = len(self.solver.board.board)
         for i in range(self.nx):
             for j in range(self.ny):
-
-                if self.board.board[i][j] != 2:
+                if (i,j) not in self.board_items:
                     item = QtWidgets.QGraphicsEllipseItem(i*10 + 2.5, j*10 + 2.5, 5, 5)
                     item.setPen(pen)
                     item.setBrush(brush)
                     self.scene().addItem(item)
                     self.board_items[i,j] = item
-                    if self.board.board[i][j] == 0:
-                        item.hide()
-
-    def update_board(self, board):
-        self.board = board
-        for i in range(self.nx):
-            for j in range(self.ny):
-                if self.board[i][j] == 1:
+                if self.solver.board.board[i][j] == 1:
                     self.board_items[i,j].show()
-                elif self.board[i][j] == 0:
+                elif self.solver.board.board[i][j] == 0:
+                    self.board_items[i,j].hide()
+                elif self.solver.board.board[i][j] == 2:
                     self.board_items[i,j].hide()
 
     def action(self, event):
-            if event.objectName() == "actionNext":                
-                if len(self.solver.stack):
-                    solution = self.solver.solve_iterative()
-                    self.update_board(self.solver.board.board)
-                    if solution:
-                        print("Solution found", solution)
-                else:
-                    print("Stack empty")
-            elif event.objectName() == 'actionStart':
-                self.timer.start(1)
+        if event.objectName() == "actionNext":
+            self.timer.stop()
+            if len(self.solver.stack):
+                solution = self.solver.solve_iterative()
+                self.update_board()
+                if solution:
+                    print("Solution found", solution)
+            else:
+                print("Stack empty")
+        elif event.objectName() == 'actionStart':
+            self.timer.start(1)
+        elif event.objectName() == 'actionRestart':
+            self.timer.stop()
+            self.solver = Solver()
+            self.update_board()
 
 
 class MainWindow(QtWidgets.QMainWindow):
