@@ -28,7 +28,7 @@ class PegGraphicsView(QtWidgets.QGraphicsView):
         self.lock.acquire()
 
         self.timer = QtCore.QTimer()
-        self.timer.start(0)
+        #self.timer.start(5)
         self.timer.timeout.connect(self.showTime)
         self.solver = Solver()
 
@@ -82,18 +82,24 @@ class PegGraphicsView(QtWidgets.QGraphicsView):
                 elif self.board[i][j] == 0:
                     self.board_items[i,j].hide()
 
-    def next(self, _):
-            if len(self.solver.stack):
-                self.solver.solve_iterative()
-                self.update_board(self.solver.board.board)
-            else:
-                print("Stack empty")
+    def action(self, event):
+            if event.objectName() == "actionNext":                
+                if len(self.solver.stack):
+                    solution = self.solver.solve_iterative()
+                    self.update_board(self.solver.board.board)
+                    if solution:
+                        print("Solution found", solution)
+                else:
+                    print("Stack empty")
+            elif event.objectName() == 'actionStart':
+                self.timer.start(1)
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi("peg.ui", self)
-        self.toolBar.actionTriggered.connect(self.graphicsView.next)
+        self.toolBar.actionTriggered.connect(self.graphicsView.action)
         
 class QApplication(QtWidgets.QApplication):
     def __init__(self, *argv):
