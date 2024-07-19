@@ -25,25 +25,28 @@ class Solver:
         self.stack = [(None, self.board)]
         self.parent = {}
 
+    def build_solution(self):
+        solution = []
+        board = self.board
+        while True:
+            try:
+                move, board = self.parent[board]
+                solution.append(move)
+            except KeyError:
+                return reversed(solution)
             
     def solve_iterative(self):
         move, self.board = self.stack.pop()
-        if self.board not in self.boards_visited:
-            self.boards_visited.add(self.board)
+        if hash(self.board) not in self.boards_visited:
+            self.boards_visited.add(hash(self.board))
 
             moves = self.board.possible_moves()
             if len(moves) == 0:
                 score = self.board.score()
                 if score == 0:
-                    solution = []
+                    return self.build_solution()
                     #print(self.parent)
-                    board = self.board
-                    while True:
-                        try:
-                            move, board = self.parent[board]
-                            solution.append(move)
-                        except KeyError:
-                            return reversed(solution)
+                    
                     
             for move in moves:
                 b = self.board.clone().move(move)
