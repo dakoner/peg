@@ -48,15 +48,16 @@ class PegGraphicsView(QtWidgets.QGraphicsView):
 
 
     def update_board(self):
-        color = QtGui.QColor("red")
-        pen = QtGui.QPen(color, 1)
-        brush = QtGui.QBrush(color)
+        
         self.nx = len(self.solver.board.board[0])
         self.ny = len(self.solver.board.board)
         for i in range(self.nx):
             for j in range(self.ny):
                 if (i,j) not in self.board_items:
                     item = QtWidgets.QGraphicsEllipseItem(i*10 + 2.5, j*10 + 2.5, 5, 5)
+                    color = QtGui.QColor("red")
+                    pen = QtGui.QPen(color, 1)
+                    brush = QtGui.QBrush(color)
                     item.setPen(pen)
                     item.setBrush(brush)
                     self.scene().addItem(item)
@@ -79,7 +80,7 @@ class PegGraphicsView(QtWidgets.QGraphicsView):
             else:
                 print("Stack empty")
         elif event.objectName() == 'actionStart':
-            self.timer.start(1)
+            self.timer.start(0)
         elif event.objectName() == 'actionRestart':
             self.timer.stop()
             self.solver = Solver()
