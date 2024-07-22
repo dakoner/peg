@@ -44,6 +44,7 @@
    <addaction name="actionNext"/>
    <addaction name="actionStart"/>
    <addaction name="actionRestart"/>
+   <addaction name="actionSequence"/>
   </widget>
   <action name="actionNext">
    <property name="text">
@@ -61,6 +62,11 @@
   <action name="actionRestart">
    <property name="text">
     <string>Restart</string>
+   </property>
+  </action>
+  <action name="actionSequence">
+   <property name="text">
+    <string>Sequence</string>
    </property>
   </action>
  </widget>

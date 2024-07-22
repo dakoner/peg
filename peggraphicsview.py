@@ -6,15 +6,34 @@ import threading
 from PyQt5.uic import loadUi
 
 from typing import List, Tuple
-from board import Board
-from solver_iterative import Solver
+from board import Board, IterativeSolver
+SOLUTION = [((5, 3), (3, 3)), ((4, 5), (4, 3)), ((6, 4), (4, 4)), ((6, 2), (6, 4)), ((4, 3), (4, 5)), ((4, 6), (4, 4)), ((4, 2), (6, 2)), ((4, 0), (4, 2)), ((3, 4), (5, 4)), ((6, 4), (4, 4)), ((3, 6), (3, 4)), ((3, 4), (5, 4)), ((3, 2), (3, 4)), ((3, 0), (3, 2)), ((3, 2), (5, 2)), ((6, 2), (4, 2)), ((2, 4), (4, 4)), ((5, 4), (3, 4)), ((2, 6), (2, 4)), ((2, 3), (2, 5)), ((1, 2), (3, 2)), ((2, 0), (2, 2)), ((0, 4), (2, 4)), ((3, 4), (1, 4)), ((0, 2), (0, 4)), ((0, 4), (2, 4)), ((2, 5), (2, 3)), ((2, 3), (2, 1)), ((4, 2), (2, 2)), ((2, 1), (2, 3)), ((1, 3), (3, 3))]
+
+class CustomDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("HELLO!")
+
+        QBtn = QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.sequence = QtWidgets.QLineEdit(str(SOLUTION))
+        self.sequence.setMaxLength(len(str(SOLUTION))+5)
+        self.layout.addWidget(self.sequence)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
 
 class PegGraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.board_items = {}
         self.setScene(QtWidgets.QGraphicsScene())
-        self.solver = Solver()
+        self.solver = IterativeSolver()
         self.update_board()
         self.draw_lines()
         self.scene().setSceneRect(QtCore.QRectF())
@@ -71,21 +90,38 @@ class PegGraphicsView(QtWidgets.QGraphicsView):
 
     def action(self, event):
         if event.objectName() == "actionNext":
-            self.timer.stop()
-            if len(self.solver.stack):
-                solution = self.solver.solve_iterative()
+            # self.timer.stop()
+            # if len(self.solver.stack):
+            #     solution = self.solver.solve_iterative()
+            #     self.update_board()
+            #     if solution:
+            #         print("Solution found", solution)
+            # else:
+            #     print("Stack empty")
+            if self.step < len(self.solution):
+                self.solver.board.move(self.solution[self.step])
+                self.step += 1
                 self.update_board()
-                if solution:
-                    print("Solution found", solution)
-            else:
-                print("Stack empty")
         elif event.objectName() == 'actionStart':
             self.timer.start(0)
         elif event.objectName() == 'actionRestart':
             self.timer.stop()
-            self.solver = Solver()
+            self.solver = IterativeSolver()
             self.update_board()
+        elif event.objectName() == 'actionSequence':
+            self.timer.stop()
+                
+            dlg = CustomDialog(self)
+            if dlg.exec():
+                print("Success!")
+                print(dlg.sequence.text())
+                self.solution = eval(dlg.sequence.text())
+                self.step = 0
+                self.solver.board = Board()
+                self.update_board()
 
+            else:
+                print("Cancel!")
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):

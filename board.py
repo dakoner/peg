@@ -99,4 +99,89 @@ class Board(object):
             s += '\n'
 
         return ''.join(s)
-    
+
+class IterativeSolver:
+    def __init__(self):
+        # Set of hashes of board positions. Used to skip boards that have been played already.
+        self.boards_visited = set()
+        self.board = Board()
+        self.stack = [(None, self.board)]
+        self.parent = {}
+
+    def build_solution(self):
+        solution = []
+        board = self.board
+        while True:
+            try:
+                move, board = self.parent[board]
+                solution.append(move)
+            except KeyError:
+                return list(reversed(solution))
+            
+    def solve_iterative(self):
+        move, self.board = self.stack.pop()
+        if hash(self.board) not in self.boards_visited:
+            self.boards_visited.add(hash(self.board))
+
+            moves = self.board.possible_moves()
+            if len(moves) == 0:
+                score = self.board.score()
+                if score == 0:
+                    print("Solution:", self.build_solution())
+                    #print(self.parent)
+                    
+            for move in moves:
+                b = self.board.clone().move(move)
+                self.parent[b] = move, self.board
+                self.stack.append((move, b))
+
+class RecursiveSolver:
+    def __init__(self, move_callback=None, done_callback=None):
+        # Set of hashes of board positions. Used to skip boards that have been played already.
+        self.boards_played = set()
+
+        # Counters for statistical purposes.
+        self.statistics = {'Games finished': 0, 'Boards skipped': 0}
+        self.move_callback = move_callback
+        self.done_callback = done_callback
+
+    def solve_recursive(self, board, move_memo=()):
+        if self.move_callback:
+            self.move_callback(board, move_memo)
+
+        if hash(board) in self.boards_played:
+            self.statistics['Boards skipped'] += 1
+            return
+        self.boards_played.add(hash(board))
+        
+        moves = board.possible_moves()
+
+        # If there are no moves left
+        if len(moves) == 0:
+            self.statistics['Games finished'] += 1
+            if self.done_callback:
+                self.done_callback(board, move_memo)
+            # If the game is solved
+            if board.score() == 0:
+                return move_memo
+        else:
+            for move in moves:
+                result = self.solve_recursive(board.clone().move(move), [mm for mm in move_memo] + [move])
+                if result:
+                    return result
+
+if __name__ == '__main__':
+    s = IterativeSolver()
+    moves_played = s.solve_recursive(Board())
+    print(f"Finished {s.statistics['Games finished']} games! (skipped {s.statistics['Boards skipped']})")
+    if moves_played:
+        m = '\n'.join([f"{m[0][0]}, {m[0][1]} -> {m[1][0]}, {m[1][1]}" for m in moves_played])
+        print(f"Solution found, moves:\n{m}")
+
+    # s = RecursiveSolver()
+    # while len(s.stack):
+    #     result = s.solve_iterative()
+    #     if result:
+    #         break
+
+    # print(list(result))
