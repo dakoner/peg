@@ -101,25 +101,24 @@ class Board(object):
         return ''.join(s)
 
 class IterativeSolver:
-    def __init__(self):
+    def __init__(self, board):
         # Set of hashes of board positions. Used to skip boards that have been played already.
         self.boards_visited = set()
-        self.board = Board()
-        self.stack = [(None, self.board)]
+        self.board = board
+        self.stack = [(board, None)]
         self.parent = {}
 
     def build_solution(self):
         solution = []
-        board = self.board
         while True:
             try:
-                move, board = self.parent[board]
+                move,self.board = self.parent[self.board]
                 solution.append(move)
             except KeyError:
                 return list(reversed(solution))
             
-    def solve_iterative(self):
-        move, self.board = self.stack.pop()
+    def solve_internal(self):
+        self.board, move = self.stack.pop()
         if hash(self.board) not in self.boards_visited:
             self.boards_visited.add(hash(self.board))
 
@@ -127,13 +126,20 @@ class IterativeSolver:
             if len(moves) == 0:
                 score = self.board.score()
                 if score == 0:
-                    print("Solution:", self.build_solution())
+                    solution = self.build_solution()
+                    return solution
                     #print(self.parent)
                     
             for move in moves:
                 b = self.board.clone().move(move)
                 self.parent[b] = move, self.board
-                self.stack.append((move, b))
+                self.stack.append((b, move))
+    
+    def solve(self):
+        while True:
+            result = self.solve_internal()
+            if result:
+                return result
 
 class RecursiveSolver:
     def __init__(self, move_callback=None, done_callback=None):
@@ -145,7 +151,7 @@ class RecursiveSolver:
         self.move_callback = move_callback
         self.done_callback = done_callback
 
-    def solve_recursive(self, board, move_memo=()):
+    def solve(self, board, move_memo=()):
         if self.move_callback:
             self.move_callback(board, move_memo)
 
@@ -171,12 +177,11 @@ class RecursiveSolver:
                     return result
 
 if __name__ == '__main__':
-    s = IterativeSolver()
-    moves_played = s.solve_recursive(Board())
-    print(f"Finished {s.statistics['Games finished']} games! (skipped {s.statistics['Boards skipped']})")
-    if moves_played:
-        m = '\n'.join([f"{m[0][0]}, {m[0][1]} -> {m[1][0]}, {m[1][1]}" for m in moves_played])
-        print(f"Solution found, moves:\n{m}")
+    s = IterativeSolver(Board())
+    print(s.solve())
+    # if moves_played:
+    #     m = '\n'.join([f"{m[0][0]}, {m[0][1]} -> {m[1][0]}, {m[1][1]}" for m in moves_played])
+    #     print(f"Solution found, moves:\n{m}")
 
     # s = RecursiveSolver()
     # while len(s.stack):
