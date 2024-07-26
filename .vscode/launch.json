@@ -1,0 +1,11 @@
+{
+    "name": "C++ Launch (Windows)",
+    "type": "cppvsdbg",
+    "request": "launch",
+    "program": "board.exe",
+    "externalConsole": true,
+    "logging": {
+      "moduleLoad": false,
+      "trace": true
+    }
+  }
