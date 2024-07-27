@@ -105,7 +105,7 @@ class IterativeSolver:
         # Set of hashes of board positions. Used to skip boards that have been played already.
         self.boards_visited = set()
         self.board = board
-        self.stack = [(board, None)]
+        self.stack = [board]
         self.parent = {}
 
     def build_solution(self):
@@ -118,7 +118,7 @@ class IterativeSolver:
                 return list(reversed(solution))
             
     def solve_internal(self):
-        self.board, move = self.stack.pop()
+        self.board = self.stack.pop()
         if hash(self.board) not in self.boards_visited:
             self.boards_visited.add(hash(self.board))
 
@@ -133,7 +133,7 @@ class IterativeSolver:
             for move in moves:
                 b = self.board.clone().move(move)
                 self.parent[b] = move, self.board
-                self.stack.append((b, move))
+                self.stack.append(b)
     
     def solve(self):
         while True:
@@ -177,12 +177,10 @@ class RecursiveSolver:
                     return result
 
 if __name__ == '__main__':
-    s = IterativeSolver(Board())
+    b = Board()
+    s = IterativeSolver(b)
     print(s.solve())
-    # if moves_played:
-    #     m = '\n'.join([f"{m[0][0]}, {m[0][1]} -> {m[1][0]}, {m[1][1]}" for m in moves_played])
-    #     print(f"Solution found, moves:\n{m}")
-
+    
     # s = RecursiveSolver()
     # while len(s.stack):
     #     result = s.solve_iterative()
